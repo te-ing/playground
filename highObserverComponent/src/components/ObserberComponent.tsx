@@ -1,47 +1,49 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
-import { ComponentType } from "react";
 
-interface ObserverArgs {
-  event: string;
-  payload: { [key: string]: string };
-}
-
-// ObserberComponent로 만들어주는 최상위 함수
-export default function ObserberComponent<P>(Component: ComponentType<P & ObserverArgs>) {
-  const handler = (arg: ObserverArgs) => console.log("handler: ", arg.event, arg.payload);
-  function Observer(args: P & ObserverArgs) {
+/** @description ObserberComponent로 만들어주는 최상위 함수
+ *  @description P 제네릭은 Props를 의미한다.
+ *  @question: 여기서 JSX.IntrinsicAttributes를 쓰는 것이 맞나? 다른 방식은 없는지? */
+export default function ObserberComponent<P extends JSX.IntrinsicAttributes>(
+  Component: React.ComponentType<P>,
+  handleEvent: (event: any) => void
+) {
+  function Observer(props: P) {
     return (
       <div
         onClick={(e: React.MouseEvent<HTMLDivElement>) => {
-          // const target = ((e.target as HTMLElement)?.closest("[data-click]") as HTMLElement) || null;
-          const target = e.target as HTMLElement;
-          console.log("target", target);
+          const target = ((e.target as HTMLElement)?.closest("[data-click-log]") as HTMLElement) || null;
           if (!target) return;
-          const event = target?.getAttribute("data-click") || "";
-          const payload = extractParams(target);
-          // console.log("extractParams", extractParams(target));
-          handler({ event, payload });
+          handleEvent(extractParams({ el: target, paramTarget: "data-click-log", paramLabel: "data-click-param" }));
         }}
       >
-        <Component {...args} />
+        <Component {...props} />
       </div>
     );
   }
   return Observer;
 }
 
-export const extractParams = (el: HTMLElement): { [key: string]: string } => {
+interface ExtractParams {
+  el: HTMLElement;
+  paramTarget: string;
+  paramLabel: string;
+  depth?: number;
+}
+
+/** @description i번째의 부모 엘리먼트까지 paramTarget 있는지 체크한 뒤 paramLabel으로 구별하여 객체를 반환한다. */
+const extractParams = ({ el, paramTarget, paramLabel, depth }: ExtractParams): { [key: string]: string } => {
   if (!el) return {};
   let paramEl = el;
   const params = {};
-  let dataParams;
-  // console.log("***params***", paramEl.closest("[data-click-param]")?.getAttribute("data-click-log"));
-  // console.log("***el***", paramEl);
-  for (let i = 0; i < 1; i++) {
-    const paramsEl = paramEl.closest("[data-click-param]");
+  const param = `[${paramTarget}]`;
+  for (let i = 0; i < (depth || 3); i++) {
+    const paramsEl = paramEl.closest(param);
     if (!paramEl || !paramEl?.parentElement) break;
-    // params[dataParams] = paramsEl?.getAttribute("data-click-param");
-    // Object.assign(params, JSON.parse(dataParams ?? "{}"));
+    const targetAttribute = paramsEl?.getAttribute(paramTarget);
+    const labelAttribute = paramsEl?.getAttribute(paramLabel);
+    if (!targetAttribute || !labelAttribute) break;
+    /** @question: 동적으로 key와 value를 생성하고 싶을 때 효율적인 방법은?? */
+    Object.assign(params, JSON.parse(`{"${labelAttribute}":"${targetAttribute}"}`));
     paramEl = paramsEl?.parentElement!;
   }
   return params;

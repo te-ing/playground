@@ -1,16 +1,16 @@
 import FirstPage from "./components/FirstPage";
 import ObserberComponent from "./components/ObserberComponent";
-interface MyComponentProps {
-  text: string;
-}
 
-const ObserveredComponent = ObserberComponent(FirstPage);
+/** @question: ObservedFirstPage를 따로 선언하지 않고 FirstPage 내에서 ObservedComponent화 할 수 있는 방법은? */
+const ObservedFirstPage = ObserberComponent(FirstPage, (arg) => console.log(arg));
+
 function App() {
-  function handleEvent(event: string, target: HTMLElement) {
-    console.log(`Received ${event} event from ${target}`);
-  }
-
-  return <ObserveredComponent event="test" payload={{ testPayload: "hello" }} />;
+  return (
+    <div>
+      test
+      <ObservedFirstPage />
+    </div>
+  );
 }
 
 export default App;
