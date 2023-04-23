@@ -1,9 +1,9 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 
-/** @description ObserberComponent로 만들어주는 최상위 함수
+/** @description ObserverComponent로 만들어주는 최상위 함수
  *  @description P 제네릭은 Props를 의미한다.
  *  @question: 여기서 JSX.IntrinsicAttributes를 쓰는 것이 맞나? 다른 방식은 없는지? */
-export default function ObserberComponent<P extends JSX.IntrinsicAttributes>(
+export default function ObserverComponent<P extends JSX.IntrinsicAttributes>(
   Component: React.ComponentType<P>,
   handleEvent: (event: { [key: string]: string } | string) => void
 ) {
