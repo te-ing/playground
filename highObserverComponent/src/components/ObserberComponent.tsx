@@ -5,7 +5,7 @@
  *  @question: 여기서 JSX.IntrinsicAttributes를 쓰는 것이 맞나? 다른 방식은 없는지? */
 export default function ObserberComponent<P extends JSX.IntrinsicAttributes>(
   Component: React.ComponentType<P>,
-  handleEvent: (event: any) => void
+  handleEvent: (event: { [key: string]: string } | string) => void
 ) {
   function Observer(props: P) {
     return (
@@ -42,8 +42,7 @@ const extractParams = ({ el, paramTarget, paramLabel, depth }: ExtractParams): {
     const targetAttribute = paramsEl?.getAttribute(paramTarget);
     const labelAttribute = paramsEl?.getAttribute(paramLabel);
     if (!targetAttribute || !labelAttribute) break;
-    /** @question: 동적으로 key와 value를 생성하고 싶을 때 효율적인 방법은?? */
-    Object.assign(params, JSON.parse(`{"${labelAttribute}":"${targetAttribute}"}`));
+    Object.assign(params, { [labelAttribute]: targetAttribute });
     paramEl = paramsEl?.parentElement!;
   }
   return params;

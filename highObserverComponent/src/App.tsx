@@ -7,7 +7,6 @@ const ObservedFirstPage = ObserberComponent(FirstPage, (arg) => console.log(arg)
 function App() {
   return (
     <div>
-      test
       <ObservedFirstPage />
     </div>
   );
