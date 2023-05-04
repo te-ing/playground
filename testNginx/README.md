@@ -6,4 +6,4 @@
 ### 설치 명령어
 > npm install -g serve
 ### 실행 명령어
-> serve -s build -l 3000(원하는 포트)
+> serve -s build -l 8090
