@@ -2,6 +2,8 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import Counter from "../../common/Counter"
+import { StyledComponent } from "../../workspace-a/src/component/StyledComponent";
 
 function App() {
   const [count, setCount] = useState(0)
@@ -25,9 +27,18 @@ function App() {
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>
       </div>
+      <div className='card' style={{fontSize: "24px", fontWeight: "bold"}}>It's common Counter
+      <Counter />
+      </div>
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
+
+      <div className='card' style={{ fontSize: "24px", fontWeight: "bold" }}>
+        
+        It's workspace-a Component
+        <StyledComponent />
+      </div>
     </>
   )
 }
