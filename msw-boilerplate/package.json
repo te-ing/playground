@@ -7,7 +7,9 @@
     "url": "https://github.com/te-ing"
   },
   "scripts": {
-    "start": "vite",
+    "dev": "vite",
+    "start": "vite --port 4000 --open",
+    "msw": "vite --mode msw",
     "build": "tsc && vite build",
     "serve": "vite preview",
     "lint": "eslint './src/**/*.{ts,tsx}'",
