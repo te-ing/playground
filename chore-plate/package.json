@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "vite",
+    "start": "vite --mode msw",
     "start:msw": "vite --port 3000 --mode msw",
     "dev": "vite",
     "build": "tsc && vite build",
@@ -15,6 +15,7 @@
     "axios": "^1.4.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-query": "^3.39.3",
     "react-router-dom": "^6.15.0"
   },
   "devDependencies": {
