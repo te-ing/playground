@@ -3,6 +3,7 @@ import './App.css';
 import InfinityScroll from './pages/InfinityScroll';
 import Home from './pages/Home';
 import FromEntries from './pages/FromEntries';
+import DataHandling from './pages/DataHandling';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Route path="*" element={<Home />} />
         <Route path="scroll" element={<InfinityScroll />} />
         <Route path="fromEntries" element={<FromEntries />} />
+        <Route path="dataHandling" element={<DataHandling />} />
       </Routes>
     </BrowserRouter>
   );

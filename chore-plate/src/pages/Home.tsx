@@ -6,6 +6,7 @@ function Home() {
       <h1>Home</h1>
       <Link to={'/scroll'}>Infinity Scroll</Link>
       <Link to={'/fromEntries'}>FromEntries</Link>
+      <Link to={'/dataHandling'}>DataHandling</Link>
     </div>
   );
 }
