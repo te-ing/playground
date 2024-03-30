@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    />
+    <title>Hello world!</title>
+  </head>
+  <body>
+  <header style="height: 80px; display: flex; align-items: center; padding: 12px;">
+    <h1 style="margin: 0;">Blog Title</h1>
+  </header>
+  <hr />
+  <main class="container" style="display: flex; justify-content: center;">
+      <article style="max-width: 800px">
+        <h2>iOS React 웹뷰에서 스크롤 후 뒤로가기 시 발생하는 렌더링 오류</h2>
+        <hr />
+        <h3 id="︎-문제상황">◼︎ 문제상황</h3>
+        <ol>
+          <li>iOS 웹뷰 환경의 리액트 특정 페이지에서 스크롤 후 뒤로가기 시, 스크롤 한 만큼의 영역에서 흰 화면이 나타나는 현상  </li>
+          <li>조금이라도 스크롤을 하면 정상적으로 돌아옴</li>
+          <li>강제로 렌더링을 시도하거나 style을 변경해도 문제가 해결되지 않음</li>
+          </ol>
+          <br />
+          <h3 id="︎-문제원인">◼︎ 문제원인</h3>
+          <p>뒤로가기 시, 기존의 스크롤 위치로 돌아오는 과정에서 페이지가 완전히 렌더링되지 않아 발생한 문제이다.<br>
+            문제가 발생하는 페이지의 공통점은 로딩 이후 불러온 콘텐츠를 보여주는 방식이었고, Android는 뒤로가기 시 스크롤 위치를 불러오지 않기 때문에 Android 에서 해당 오류가 발생하지 않는 것이었다.</p>
+          <br />
+          <h3 id="︎-해결방안">◼︎ 해결방안</h3>
+          <h4 id="1-스크롤의-높이를-저장하지-않는다">1. 스크롤의 높이를 저장하지 않는다.</h4>
+          <br />
+          <p><code>window.history.scrollRestoration = 'manual';</code> 을 사용하여&nbsp;페이지 이동 시 스크롤의 위치를 저장하지 않도록 할 수 있다.<br>
+            다만 특정 페이지에서만 일어나는 현상으로, <code>window.scrollTo({top:0.1});</code> 와 같이 스크롤을 초기화 하는 방식을 사용하는 것을 권장한다.<br>
+            0이 아닌 0.1을 사용하는 이유는 초기 렌더링 시에는 이미 scrollY가 0이기 때문에 scrollTo가 최적화되어 발생하지 않기 때문이다.</p>
+          <h4 id="2-페이지가-모두-렌더링-된-후-스크롤을-이동시킨다">2. 페이지가 모두 렌더링 된 후 스크롤을 이동시킨다.</h4>
+          <p>뒤로가기 시, 기존의 스크롤 위치로 돌아오는 과정에서 페이지가 완전히 렌더링되지 않아 발생한 문제이다.<br>
+            문제가 발생하는 페이지의 공통점은 로딩 이후 불러온 콘텐츠를 보여주는 방식이었고, Android는 뒤로가기 시 스크롤 위치를 불러오지 않기 때문에 Android 에서 해당 오류가 발생하지 않는 것이었다.</p>
+
+            <p>직접 스크롤 저장방식을 구현한 뒤, 목록을 불러오는 시점에 맞춰 스크롤을 이동시킨다.<br>
+              다만 무한스크롤과 같이 사용자의 동작에 따라 스크롤 높이가 바뀌는 상황에서는 동작할 수 없으며, 별도의 로직이 필요하다.</p>
+      <pre class=" language-ts"><code class=" language-ts"><span class="token keyword">import</span> <span class="token punctuation">{</span> useEffect <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"react"</span><span class="token punctuation">;</span>
+        <span class="token keyword">import</span> <span class="token punctuation">{</span> useLocation <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"react-router-dom"</span><span class="token punctuation">;</span>
+        
+        <span class="token comment">/**
+         * 스크롤 시마다 현재 스크롤 위치를 저장하고, 원하는 시점에 스크롤 위치를 불러올 수 있도록 하는 훅입니다.
+         * 선언한 컴포넌트에서 스크롤 할 때마다 현재 스크롤 위치를 저장합니다.
+         * @param ref 해당 컴포넌트가 렌더링 혹은 상태 변경 시 스크롤 위치를 불러옵니다.
+         * @returns scrollRestore 실행 시 스크롤 위치를 불러옵니다.
+         */</span>
+        <span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span> <span class="token function">useScrollRestoration</span><span class="token punctuation">(</span><span class="token parameter">ref<span class="token operator">?</span><span class="token punctuation">:</span> React<span class="token punctuation">.</span>RefObject<span class="token operator">&lt;</span>HTMLElement<span class="token operator">&gt;</span></span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+          <span class="token keyword">const</span> <span class="token punctuation">{</span> pathname <span class="token punctuation">}</span> <span class="token operator">=</span> <span class="token function">useLocation</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+          <span class="token comment">// 저장된 스크롤이 0이 아닐 때 스크롤을 불러온다.</span>
+          <span class="token keyword">const</span> <span class="token function-variable function">scrollRestore</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">getScrollStore</span><span class="token punctuation">(</span>pathname<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+              window<span class="token punctuation">.</span><span class="token function">scrollTo</span><span class="token punctuation">(</span><span class="token punctuation">{</span> top<span class="token punctuation">:</span> <span class="token function">getScrollStore</span><span class="token punctuation">(</span>pathname<span class="token punctuation">)</span> <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+              <span class="token function">setScrollStore</span><span class="token punctuation">(</span>pathname<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+          <span class="token punctuation">}</span><span class="token punctuation">;</span>
+        
+          <span class="token function">useEffect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> ref <span class="token operator">&amp;&amp;</span> <span class="token function">scrollRestore</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>ref<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+          <span class="token function">useEffect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+            <span class="token keyword">let</span> currScrollY <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            <span class="token keyword">const</span> <span class="token function-variable function">scrollSaveEvent</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+              currScrollY <span class="token operator">=</span> window<span class="token punctuation">.</span>scrollY<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span><span class="token punctuation">;</span>
+            window<span class="token punctuation">.</span><span class="token function">addEventListener</span><span class="token punctuation">(</span><span class="token string">"scroll"</span><span class="token punctuation">,</span> scrollSaveEvent<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+              <span class="token function">setScrollStore</span><span class="token punctuation">(</span>pathname<span class="token punctuation">,</span> currScrollY<span class="token punctuation">)</span><span class="token punctuation">;</span>
+              window<span class="token punctuation">.</span><span class="token function">removeEventListener</span><span class="token punctuation">(</span><span class="token string">"scroll"</span><span class="token punctuation">,</span> scrollSaveEvent<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span><span class="token punctuation">;</span>
+          <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>pathname<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+          <span class="token keyword">return</span> <span class="token punctuation">{</span> scrollRestore <span class="token punctuation">}</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        
+        <span class="token keyword">const</span> getScrollStore <span class="token operator">=</span> <span class="token punctuation">(</span>pathname<span class="token punctuation">:</span> <span class="token builtin">string</span><span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token parameter"><span class="token builtin">number</span></span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+          <span class="token keyword">const</span> item <span class="token operator">=</span> window<span class="token punctuation">.</span>sessionStorage<span class="token punctuation">.</span><span class="token function">getItem</span><span class="token punctuation">(</span><span class="token string">"scrollStore"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+          <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>item<span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+          <span class="token keyword">const</span> scrollStore <span class="token operator">=</span> <span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">parse</span><span class="token punctuation">(</span>item<span class="token punctuation">)</span><span class="token punctuation">;</span>
+          <span class="token keyword">return</span> scrollStore<span class="token punctuation">[</span>pathname<span class="token punctuation">]</span> <span class="token operator">||</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">;</span>
+        
+        <span class="token keyword">const</span> <span class="token function-variable function">setScrollStore</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token parameter">pathname<span class="token punctuation">:</span> <span class="token builtin">string</span><span class="token punctuation">,</span> scrollY<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token builtin">number</span></span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+          <span class="token keyword">const</span> prevStore <span class="token operator">=</span> window<span class="token punctuation">.</span>sessionStorage<span class="token punctuation">.</span><span class="token function">getItem</span><span class="token punctuation">(</span><span class="token string">"scrollStore"</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token string">"{}"</span><span class="token punctuation">;</span>
+          <span class="token keyword">const</span> store <span class="token operator">=</span> <span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">parse</span><span class="token punctuation">(</span>prevStore<span class="token punctuation">)</span><span class="token punctuation">;</span>
+          store<span class="token punctuation">[</span>pathname<span class="token punctuation">]</span> <span class="token operator">=</span> scrollY <span class="token operator">?</span><span class="token operator">?</span> window<span class="token punctuation">.</span>scrollY<span class="token punctuation">;</span>
+          window<span class="token punctuation">.</span>sessionStorage<span class="token punctuation">.</span><span class="token function">setItem</span><span class="token punctuation">(</span><span class="token string">"scrollStore"</span><span class="token punctuation">,</span> <span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">stringify</span><span class="token punctuation">(</span>store<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+          <span class="token keyword">return</span> store<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">;</span>
+        </code></pre>
+    </article>
+    </main>
+  </body>
+</html>
