@@ -1,5 +1,9 @@
 export interface PageResonse {
-  id: number;
-  name: string;
-  age: number;
+  data: {
+    id: number;
+    name: string;
+    age: number;
+  }[];
+  nextPage: number;
+  totalPages: number;
 }
