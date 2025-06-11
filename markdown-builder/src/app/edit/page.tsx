@@ -1,9 +1,9 @@
-import Editor from './Editor';
+import { SimpleEditor } from './SimpleEditor';
 
 export default function EditPage() {
   return (
     <div>
-      <Editor />
+      <SimpleEditor />
     </div>
   );
 }
