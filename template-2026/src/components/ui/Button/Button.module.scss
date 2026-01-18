@@ -1,0 +1,57 @@
+.button {
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Variants
+.primary {
+  background: #333;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: #555;
+  }
+}
+
+.secondary {
+  background: #e5e5e5;
+  color: #333;
+
+  &:hover:not(:disabled) {
+    background: #d5d5d5;
+  }
+}
+
+.outline {
+  background: transparent;
+  color: #333;
+  border: 1px solid #333;
+
+  &:hover:not(:disabled) {
+    background: #f5f5f5;
+  }
+}
+
+// Sizes
+.small {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+}
+
+.medium {
+  padding: 12px 24px;
+  font-size: 1rem;
+}
+
+.large {
+  padding: 16px 32px;
+  font-size: 1.125rem;
+}
